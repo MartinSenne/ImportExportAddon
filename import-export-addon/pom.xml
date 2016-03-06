@@ -82,6 +82,13 @@
 	</pluginRepositories>
 
 	<dependencies>
+		<!-- CSV library -->
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>3.3</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-server</artifactId>

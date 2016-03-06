@@ -2,10 +2,19 @@ package com.vaadin.importexport.impl;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.importexport.api.Conversion;
+import com.vaadin.importexport.api.Converter;
+import com.vaadin.importexport.api.Exporter;
 import com.vaadin.importexport.api.Row;
+import com.vaadin.importexport.impl.exporters.CsvExporter;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class Main {
 
@@ -16,10 +25,29 @@ public class Main {
     public static void main(String[] args) {
         IndexedContainer simpleContainer = createSimpleContainer();
 
+        // capture the container
         DataSourceTabular tabular = new DataSourceTabular(simpleContainer);
-        Iterator<? extends Row<Object>> iterator = tabular.rowIterator();
-        while (iterator.hasNext()) {
-            System.out.println( iterator.next() );
+        
+        // export it
+        try {
+            
+            Map<Object, Converter> map = new HashMap<>();
+            map.put(S, new Converter() {
+                        @Override
+                        public Object convert(Object input) {
+                            return ((String)input) + "_exported";
+                        }
+                    });
+            
+            Conversion<Object> columnConversion = new Conversion<>( map );
+
+            Conversion<Class<?>> typeConversion = new Conversion<>( new HashMap<>() );
+            
+            
+            CsvExporter csvExporter = new CsvExporter();
+            csvExporter.export(tabular, columnConversion, typeConversion, new FileWriter("/home/martin/test.csv"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

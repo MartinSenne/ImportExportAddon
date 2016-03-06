@@ -44,6 +44,11 @@ public class DataSourceTabular implements Tabular<Object, Object> {
         return iterator;
     }
 
+    @Override
+    public Collection<Object> columnIds() {
+        return (Collection<Object>) container.getContainerPropertyIds();
+    }
+
     static class RowImpl implements Row<Object> {
 
         private Item item;

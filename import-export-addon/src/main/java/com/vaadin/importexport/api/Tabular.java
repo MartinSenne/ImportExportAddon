@@ -1,5 +1,6 @@
 package com.vaadin.importexport.api;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 public interface Tabular<CID, RID> {
@@ -11,4 +12,6 @@ public interface Tabular<CID, RID> {
     <T> T dataAt( CID column, RID row, Class<T> clazz );
 
     Iterator<? extends Row<CID>> rowIterator();
+    
+    Collection<CID> columnIds();
 }
