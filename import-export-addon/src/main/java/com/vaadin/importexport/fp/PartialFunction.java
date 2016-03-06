@@ -52,7 +52,8 @@ public abstract class PartialFunction<T, R> implements Function<T, R> {
     }
 }
 
-
+// From Scala
+// ==========
 
 //    def applyOrElse[A1 <: A, B1 >: B](x: A1, default: A1 => B1): B1 =
 //            if (isDefinedAt(x)) apply(x) else default(x)

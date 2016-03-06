@@ -71,7 +71,7 @@ public class CsvExporter implements Exporter<Object, Object> {
     }
 
 
-    // THIS IS ALL INCREDIBLY PAINFUL in JAVA :(
+    // THIS IS ALL SO INCREDIBLY PAINFUL in JAVA :(
 
     class PF<CID> extends PartialFunction<CID, Converter> {
 

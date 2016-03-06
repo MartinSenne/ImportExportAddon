@@ -38,10 +38,19 @@ public class Main {
                             return ((String)input) + "_exported";
                         }
                     });
-            
             Conversion<Object> columnConversion = new Conversion<>( map );
 
-            Conversion<Class<?>> typeConversion = new Conversion<>( new HashMap<>() );
+
+            Map<Class<?>, Converter> map2 = new HashMap<>();
+            map2.put(Integer.class, new Converter() {
+                @Override
+                public Object convert(Object input) {
+                    System.out.println("This is type converter.");
+                    Integer typedInput = (Integer) input;
+                    return Integer.toString(typedInput + 3) + "_type";
+                }
+            });
+            Conversion<Class<?>> typeConversion = new Conversion<>( map2 );
             
             
             CsvExporter csvExporter = new CsvExporter();
