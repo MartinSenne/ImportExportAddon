@@ -8,8 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class CsvExporter implements Exporter<Object, Object> {
 
@@ -22,37 +21,30 @@ public class CsvExporter implements Exporter<Object, Object> {
     public CsvExporter(CsvConfig csvConfig) {
         this.csvConfig = csvConfig;    
     }
-    
-    
-    @Override
-    public void export(Tabular<Object, Object> tabular, Conversion<Object> columnConversion, Conversion<Class<?>> typeConversion, Writer writer) {
-        CSVWriter csvWriter = new CSVWriter(writer, csvConfig.getSeparator(), csvConfig.getQuoteChar(), csvConfig.getEscapeCharacter(), csvConfig.getLineEnd());
-      
-        Collection<Object> cids = tabular.columnIds();
-        
-        Iterator<? extends Row<Object>> it = tabular.rowIterator();
-        while (it.hasNext()) {
-            Row<Object> row = it.next();
 
-            // these is still extremely ugly ...... must be more functional
+    private static Converter<Object, String> fallbackConverter = new ToStringConverter();
+
+    @Override
+    public void export(Tabular<Object, Object> tabular,
+                       PartialFunction<Object, Converter<Object, String>> columnConversion,
+                       PartialFunction<Class<?>, Converter<Object, String>> typeConversion,
+                       Writer writer) {
+        CSVWriter csvWriter = new CSVWriter(writer, csvConfig.getSeparator(), csvConfig.getQuoteChar(), csvConfig.getEscapeCharacter(), csvConfig.getLineEnd());
+
+        Collection<Object> cids = tabular.columnIds();
+
+        Stream<? extends Row<Object>> rowStream = tabular.rowStream();
+
+        rowStream.forEach( row -> {
             String[] convertedValues = cids.stream()
                     .map(cid -> {
-                        Converter converter = null;
                         Object data = row.dataAt(cid);
-                        if (columnConversion.isDefinedAt(cid)) {
-                            converter = columnConversion.apply(cid);
-                        } else {
-                            if (typeConversion.isDefinedAt(data.getClass())) {
-                                converter = typeConversion.apply(data.getClass());
-                            } else {
-                                converter = new ToStringConverter();
-                            }
-                        }
-                        return (String) converter.convert(data);
-                    }).toArray(String[]::new);
+                        return resolveConverter(data, cid, columnConversion, typeConversion).convert(data);
+                    })
+                    .toArray(String[]::new);
 
             csvWriter.writeNext(convertedValues);
-        }
+        });
 
         try {
             csvWriter.close();
@@ -61,7 +53,23 @@ public class CsvExporter implements Exporter<Object, Object> {
             throw new RuntimeException("Could not close writer properly");
         }
     }
-    
+
+    private Converter<Object, String> resolveConverter(Object data, Object cid,
+                                                       PartialFunction<Object, Converter<Object, String>> columnConversion,
+                                                       PartialFunction<Class<?>, Converter<Object, String>> typeConversion) {
+        Converter<Object, String> converter = null;
+        if (columnConversion.isDefinedAt(cid)) {
+            converter = columnConversion.apply(cid);
+        } else {
+            if (typeConversion.isDefinedAt(data.getClass())) {
+                converter = typeConversion.apply(data.getClass());
+            } else {
+                converter = fallbackConverter;
+            }
+        }
+        return converter;
+    }
+
     static class ToStringConverter implements Converter {
 
         @Override

@@ -6,6 +6,7 @@ import com.vaadin.importexport.api.Conversion;
 import com.vaadin.importexport.api.Converter;
 import com.vaadin.importexport.api.Exporter;
 import com.vaadin.importexport.api.Row;
+import com.vaadin.importexport.fp.MapAsPartialFunction;
 import com.vaadin.importexport.impl.exporters.CsvExporter;
 
 import java.io.FileWriter;
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Main {
 
@@ -31,30 +33,25 @@ public class Main {
         // export it
         try {
             
-            Map<Object, Converter> map = new HashMap<>();
-            map.put(S, new Converter() {
-                        @Override
-                        public Object convert(Object input) {
-                            return ((String)input) + "_exported";
-                        }
-                    });
-            Conversion<Object> columnConversion = new Conversion<>( map );
+            Map<Object, Converter<Object, String>> map = new HashMap<>();
+            map.put(S, input -> ((String)input) + "_exported");
 
 
-            Map<Class<?>, Converter> map2 = new HashMap<>();
-            map2.put(Integer.class, new Converter() {
-                @Override
-                public Object convert(Object input) {
-                    System.out.println("This is type converter.");
-                    Integer typedInput = (Integer) input;
-                    return Integer.toString(typedInput + 3) + "_type";
-                }
+            Map<Class<?>, Converter<Object, String>> map2 = new HashMap<>();
+            map2.put(Integer.class, input -> {
+                System.out.println("This is type converter.");
+                Integer typedInput = (Integer) input;
+                return Integer.toString(typedInput + 3) + "_type";
             });
-            Conversion<Class<?>> typeConversion = new Conversion<>( map2 );
-            
+
             
             CsvExporter csvExporter = new CsvExporter();
-            csvExporter.export(tabular, columnConversion, typeConversion, new FileWriter("/home/martin/test.csv"));
+            csvExporter.export(tabular,
+                    new MapAsPartialFunction<Object, Converter<Object, String>>(map),
+                    new MapAsPartialFunction<Class<?>, Converter<Object, String>>(map2),
+                    // new FileWriter("/home/martin/test.csv"));
+                    new FileWriter("/Users/martin/test.csv"));
+
         } catch (IOException e) {
             e.printStackTrace();
         }

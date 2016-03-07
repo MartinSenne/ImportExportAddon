@@ -1,7 +1,7 @@
 package com.vaadin.importexport.api;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 public interface Tabular<CID, RID> {
     int rows();
@@ -11,7 +11,7 @@ public interface Tabular<CID, RID> {
 
     <T> T dataAt( CID column, RID row, Class<T> clazz );
 
-    Iterator<? extends Row<CID>> rowIterator();
+    Stream<? extends Row<CID>> rowStream();
     
     Collection<CID> columnIds();
 }

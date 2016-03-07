@@ -7,6 +7,7 @@ import com.vaadin.importexport.api.Tabular;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 public class DataSourceTabular implements Tabular<Object, Object> {
     private Container container;
@@ -36,12 +37,13 @@ public class DataSourceTabular implements Tabular<Object, Object> {
     }
 
     @Override
-    public Iterator<? extends Row<Object>> rowIterator() {
-        Iterator<RowImpl> iterator = ((Collection<Object>) container.getItemIds())
+    public Stream<? extends Row<Object>> rowStream() {
+
+        Stream<RowImpl> stream = ((Collection<Object>) container.getItemIds())
                 .stream()
-                .map(itemId -> new RowImpl(container.getItem(itemId)))
-                .iterator();
-        return iterator;
+                .map(itemId -> new RowImpl(container.getItem(itemId)));
+                // .iterator();
+        return stream;
     }
 
     @Override

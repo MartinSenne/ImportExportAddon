@@ -1,6 +1,6 @@
 package com.vaadin.importexport.api;
 
 @FunctionalInterface
-public interface Converter {
-    Object convert(Object input);
+public interface Converter<I, O> {
+    O convert(I input);
 }
