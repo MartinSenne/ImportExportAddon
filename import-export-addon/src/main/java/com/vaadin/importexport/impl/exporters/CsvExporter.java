@@ -2,12 +2,14 @@ package com.vaadin.importexport.impl.exporters;
 
 import com.opencsv.CSVWriter;
 import com.vaadin.importexport.api.*;
+import com.vaadin.importexport.fp.MapAsPartialFunction;
 import com.vaadin.importexport.fp.PartialFunction;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class CsvExporter implements Exporter<Object, Object> {
@@ -26,12 +28,15 @@ public class CsvExporter implements Exporter<Object, Object> {
 
     @Override
     public void export(Tabular<Object, Object> tabular,
-                       PartialFunction<Object, Converter<Object, String>> columnConversion,
-                       PartialFunction<Class<?>, Converter<Object, String>> typeConversion,
+                       Map<Object, Converter<Object, String>> columnConversion,
+                       Map<Class<?>, Converter<Object, String>> typeConversion,
                        Writer writer) {
         CSVWriter csvWriter = new CSVWriter(writer, csvConfig.getSeparator(), csvConfig.getQuoteChar(), csvConfig.getEscapeCharacter(), csvConfig.getLineEnd());
 
         Collection<Object> cids = tabular.columnIds();
+
+        PartialFunction<Object, Converter<Object, String>> columnConversionFnc = new MapAsPartialFunction<>(columnConversion);
+        PartialFunction<Class<?>, Converter<Object, String>> typeConversionFnc = new MapAsPartialFunction<>(typeConversion);
 
         Stream<? extends Row<Object>> rowStream = tabular.rowStream();
 
@@ -39,7 +44,7 @@ public class CsvExporter implements Exporter<Object, Object> {
             String[] convertedValues = cids.stream()
                     .map(cid -> {
                         Object data = row.dataAt(cid);
-                        return resolveConverter(data, cid, columnConversion, typeConversion).convert(data);
+                        return resolveConverter(data, cid, columnConversionFnc, typeConversionFnc).convert(data);
                     })
                     .toArray(String[]::new);
 

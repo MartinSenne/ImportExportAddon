@@ -6,7 +6,6 @@ import com.vaadin.importexport.api.Row;
 import com.vaadin.importexport.api.Tabular;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 public class DataSourceTabular implements Tabular<Object, Object> {

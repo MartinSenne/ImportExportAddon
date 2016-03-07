@@ -29,28 +29,23 @@ public class Main {
 
         // capture the container
         DataSourceTabular tabular = new DataSourceTabular(simpleContainer);
-        
+
+        // setup converter map
+        Map<Object, Converter<Object, String>> columnConverters = new HashMap<>();
+        columnConverters.put(S, input -> ((String)input) + "_exported");
+
+        Map<Class<?>, Converter<Object, String>> typeBasedConverts = new HashMap<>();
+        typeBasedConverts.put(Integer.class, input -> {
+            Integer typedInput = (Integer) input;
+            return Integer.toString(typedInput + 3) + "_type";
+        });
+        typeBasedConverts.put(Date.class, date -> Long.toString( ((Date)date).getTime()));
+
         // export it
         try {
-            
-            Map<Object, Converter<Object, String>> map = new HashMap<>();
-            map.put(S, input -> ((String)input) + "_exported");
-
-
-            Map<Class<?>, Converter<Object, String>> map2 = new HashMap<>();
-            map2.put(Integer.class, input -> {
-                System.out.println("This is type converter.");
-                Integer typedInput = (Integer) input;
-                return Integer.toString(typedInput + 3) + "_type";
-            });
-
-            
             CsvExporter csvExporter = new CsvExporter();
-            csvExporter.export(tabular,
-                    new MapAsPartialFunction<Object, Converter<Object, String>>(map),
-                    new MapAsPartialFunction<Class<?>, Converter<Object, String>>(map2),
+            csvExporter.export(tabular, columnConverters, typeBasedConverts, new FileWriter("/Users/martin/test.csv"));
                     // new FileWriter("/home/martin/test.csv"));
-                    new FileWriter("/Users/martin/test.csv"));
 
         } catch (IOException e) {
             e.printStackTrace();
